@@ -1,9 +1,10 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, NavLink } from "react-router-dom";
 import styles from "./Layout.module.css";
 import Azure from "../../assets/Azure.svg";
 import { CopyRegular, ShareRegular } from "@fluentui/react-icons";
 import { Dialog, Stack, TextField } from "@fluentui/react";
 import { useEffect, useState } from "react";
+import esaiStyles from "./Layout.esai.module.css";
 
 const Layout = () => {
     const [isSharePanelOpen, setIsSharePanelOpen] = useState<boolean>(false);
@@ -36,18 +37,35 @@ const Layout = () => {
             <header className={styles.header} role={"banner"}>
                 <div className={styles.headerContainer}>
                     <Stack horizontal verticalAlign="center">
-                        <img
-                            src={Azure}
-                            className={styles.headerIcon}
-                            aria-hidden="true"
-                        />
                         <Link to="/" className={styles.headerTitleContainer}>
-                            <h1 className={styles.headerTitle}>Azure AI</h1>
+                            <h3 className={styles.headerTitle}>E+D AI Assistant</h3>
                         </Link>
-                        <div className={styles.shareButtonContainer} role="button" tabIndex={0} aria-label="Share" onClick={handleShareClick} onKeyDown={e => e.key === "Enter" || e.key === " " ? handleShareClick() : null}>
-                            <ShareRegular className={styles.shareButton} />
-                            <span className={styles.shareButtonText}>Share</span>
-                        </div>
+                        <nav>
+                            <ul className={esaiStyles.headerNavList}>
+                                {/* <li>
+                                    <NavLink to="/" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Chat
+                                    </NavLink>
+                                </li> */}
+                                <li>
+                                    <NavLink to="/" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Help
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRxl8XViM761GhvM3jg9uC4NUNUdLQ1YwTUpJWDZHN1RBMUFZWjREODEyQi4u" 
+                                    target="_blank" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Submit content for Review
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="https://msdpn.azurewebsites.net/" target="_blank" 
+                                    className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Data Privacy Notice
+                                    </NavLink>
+                                </li>
+                            </ul>
+                        </nav>
                     </Stack>
                 </div>
             </header>

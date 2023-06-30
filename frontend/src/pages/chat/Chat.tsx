@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
-import { Stack } from "@fluentui/react";
-import { BroomRegular, DismissRegular, SquareRegular, ShieldLockRegular } from "@fluentui/react-icons";
+import { DefaultButton, Stack } from "@fluentui/react";
+import { BroomRegular, DismissRegular, SquareRegular, ErrorCircleRegular } from "@fluentui/react-icons";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm'
@@ -8,6 +8,8 @@ import rehypeRaw from "rehype-raw";
 
 import styles from "./Chat.module.css";
 import Azure from "../../assets/Azure.svg";
+import ESAILogo from "../../assets/ESAILogo.png";
+import esaiStyles from "./Chat.esai.module.css";
 
 import {
     ChatMessage,
@@ -20,8 +22,22 @@ import {
 } from "../../api";
 import { Answer } from "../../components/Answer";
 import { QuestionInput } from "../../components/QuestionInput";
+import { Settings } from "../../api/esai.models";
+import { FeedbackPanel } from "../../components/FeedbackPanel/FeedbackPanel";
+import { SettingsPanel } from "../../components/SettingsPanel/SettingsPanel";
+import { SettingsButton } from "../../components/SettingsButton";
+import { Footer } from "../../components/Footer/Footer";
+
 
 const Chat = () => {
+    const [isFeedbackPanelOpen, setIsFeedbackPanelOpen] = useState(false);
+    const [feedbackMessageIndex, setFeedbackMessageIndex] = useState(-1);
+    const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+    const [settings, setSettings] = useState<Settings>({
+        acs_index: "m365index",
+        in_domain_only: true,
+    });
+
     const lastQuestionRef = useRef<string>("");
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,7 +72,8 @@ const Chat = () => {
         };
 
         const request: ConversationRequest = {
-            messages: [...answers, userMessage]
+            messages: [...answers, userMessage],
+            settings: settings,
         };
 
         let result = {} as ChatResponse;
@@ -138,40 +155,63 @@ const Chat = () => {
         return [];
     }
 
+    const onLikeResponse = (index: number) => {
+        let answer = answers[index];
+        setFeedbackMessageIndex(index);
+        setIsFeedbackPanelOpen(!isFeedbackPanelOpen);
+        setAnswers([...answers.slice(0, index), answer, ...answers.slice(index + 1)]);
+    };
+
+    const onDislikeResponse = (index: number) => {
+        let answer = answers[index];
+        setFeedbackMessageIndex(index);
+        setIsFeedbackPanelOpen(!isFeedbackPanelOpen);
+        setAnswers([...answers.slice(0, index), answer, ...answers.slice(index + 1)]);
+    };
+
     return (
-        <div className={styles.container} role="main">
+        <div className={styles.container}>
+            <div className={esaiStyles.commandsContainer}>
+                <SettingsButton className={esaiStyles.commandButton} onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
+            </div>
             {showAuthMessage ? (
                 <Stack className={styles.chatEmptyState}>
-                    <ShieldLockRegular className={styles.chatIcon} style={{color: 'darkorange', height: "200px", width: "200px"}}/>
+                    <ErrorCircleRegular className={styles.chatIcon} style={{color: 'crimson'}}/>
                     <h1 className={styles.chatEmptyStateTitle}>Authentication Not Configured</h1>
+                    <h2 className={styles.chatEmptyStateSubtitle}>This app does not have authentication configured. Please add an identity provider.</h2>
                     <h2 className={styles.chatEmptyStateSubtitle}>
-                        This app does not have authentication configured. Please add an identity provider by finding your app in the 
+                        Go to your app in the 
                         <a href="https://portal.azure.com/" target="_blank"> Azure Portal </a>
-                        and following 
+                         and follow 
                          <a href="https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service#3-configure-authentication-and-authorization" target="_blank"> these instructions</a>.
                     </h2>
-                    <h2 className={styles.chatEmptyStateSubtitle} style={{fontSize: "20px"}}><strong>Authentication configuration takes a few minutes to apply. </strong></h2>
-                    <h2 className={styles.chatEmptyStateSubtitle} style={{fontSize: "20px"}}><strong>If you deployed in the last 10 minutes, please wait and reload the page after 10 minutes.</strong></h2>
                 </Stack>
             ) : (
                 <Stack horizontal className={styles.chatRoot}>
                     <div className={styles.chatContainer}>
                         {!lastQuestionRef.current ? (
                             <Stack className={styles.chatEmptyState}>
-                                <img
-                                    src={Azure}
-                                    className={styles.chatIcon}
-                                    aria-hidden="true"
-                                />
-                                <h1 className={styles.chatEmptyStateTitle}>Start chatting</h1>
-                                <h2 className={styles.chatEmptyStateSubtitle}>This chatbot is configured to answer your questions</h2>
+                                <img src={ESAILogo} height="233" width="233"></img>
+                                <h1 className={styles.chatEmptyStateTitle}>Welcome to Prompt Engineering AI Assistant on E+D AI</h1>
+                                <h2 className={styles.chatEmptyStateSubtitle}>Your AI-powered assistant for prompt engineering questions</h2>
+                                <p className={styles.chatEmptyStateSubtitle}><b>Try out some questions:</b></p>
+                                <p className={styles.chatEmptyStateSubtitle}>
+                                    What is few shot learning?<br/>
+                                    What is advanced reasoning in prompt engineering?<br/>
+                                    What are good communities to join for prompt engineering learning at Microsoft?<br/>
+                                    Recommend resources for learning more about prompt engineering best practices.<br/>
+                                    What are the different sessions from E+D Prompt Forum?<br/>
+                                    What are best practices for prompt engineering?<br/>
+                                    Explain the different GPT-4 Variants.<br/>
+                                    How can I reduce hallucinations with prompt engineering?<br/>
+                                </p>
                             </Stack>
                         ) : (
-                            <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "0px"}} role="log">
+                            <div className={styles.chatMessageStream} style={{ marginBottom: isLoading ? "40px" : "0px"}}>
                                 {answers.map((answer, index) => (
                                     <>
                                         {answer.role === "user" ? (
-                                            <div className={styles.chatMessageUser} tabIndex={0}>
+                                            <div className={styles.chatMessageUser}>
                                                 <div className={styles.chatMessageUserMessage}>{answer.content}</div>
                                             </div>
                                         ) : (
@@ -182,6 +222,8 @@ const Chat = () => {
                                                         citations: parseCitationFromMessage(answers[index - 1]),
                                                     }}
                                                     onCitationClicked={c => onShowCitation(c)}
+                                                    onLikeResponseClicked={() => onLikeResponse(index)}
+                                                    onDislikeResponseClicked={() => onDislikeResponse(index)}
                                                 />
                                             </div> : null
                                         )}
@@ -199,6 +241,8 @@ const Chat = () => {
                                                     citations: []
                                                 }}
                                                 onCitationClicked={() => null}
+                                                onLikeResponseClicked={() => null}
+                                                onDislikeResponseClicked={() => null}
                                             />
                                         </div>
                                     </>
@@ -222,20 +266,16 @@ const Chat = () => {
                                         <span className={styles.stopGeneratingText} aria-hidden="true">Stop generating</span>
                                 </Stack>
                             )}
-                            <div
-                                role="button"
-                                tabIndex={0}
+                            <BroomRegular
+                                className={styles.clearChatBroom}
+                                style={{ background: isLoading || answers.length === 0 ? "#BDBDBD" : "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)", 
+                                        cursor: isLoading || answers.length === 0 ? "" : "pointer"}}
                                 onClick={clearChat}
                                 onKeyDown={e => e.key === "Enter" || e.key === " " ? clearChat() : null}
                                 aria-label="Clear session"
-                                >
-                                <BroomRegular
-                                    className={styles.clearChatBroom}
-                                    style={{ background: isLoading || answers.length === 0 ? "#BDBDBD" : "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)", 
-                                            cursor: isLoading || answers.length === 0 ? "" : "pointer"}}
-                                    aria-hidden="true"
-                                />
-                            </div>
+                                role="button"
+                                tabIndex={0}
+                            />
                             <QuestionInput
                                 clearOnSend
                                 placeholder="Type a new question..."
@@ -243,15 +283,15 @@ const Chat = () => {
                                 onSend={question => makeApiRequest(question)}
                             />
                         </Stack>
+                        <Footer />
                     </div>
                     {answers.length > 0 && isCitationPanelOpen && activeCitation && (
-                    <Stack.Item className={styles.citationPanel} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
+                    <Stack.Item className={styles.citationPanel}>
                         <Stack horizontal className={styles.citationPanelHeaderContainer} horizontalAlign="space-between" verticalAlign="center">
                             <span className={styles.citationPanelHeader}>Citations</span>
                             <DismissRegular className={styles.citationPanelDismiss} onClick={() => setIsCitationPanelOpen(false)}/>
                         </Stack>
-                        <h5 className={styles.citationPanelTitle} tabIndex={0}>{activeCitation[2]}</h5>
-                        <div tabIndex={0}> 
+                        <h5 className={styles.citationPanelTitle}>{activeCitation[2]}</h5>
                         <ReactMarkdown 
                             linkTarget="_blank"
                             className={styles.citationPanelContent}
@@ -259,12 +299,30 @@ const Chat = () => {
                             remarkPlugins={[remarkGfm]} 
                             rehypePlugins={[rehypeRaw]}
                         />
-                        </div>
-                        
                     </Stack.Item>
                 )}
                 </Stack>
             )}
+            <FeedbackPanel
+                isOpen={isFeedbackPanelOpen}
+                onDismiss={() => setIsFeedbackPanelOpen(false)}
+                selectedContentIndex={settings.acs_index ?? ""}
+                feedbackMessageIndex={feedbackMessageIndex}
+                chatMessages={answers}
+                inDomain={settings.in_domain_only ?? false}
+                allowContact={false}
+            />
+            <SettingsPanel
+                isOpen={isConfigPanelOpen}
+                onSettingsChanged={(newSettings) => {
+                    if (settings.acs_index !== newSettings.acs_index) {
+                        clearChat();
+                    }
+
+                    setSettings(newSettings);
+                }}
+                onDismiss={() => setIsConfigPanelOpen(false)}
+            />
         </div>
     );
 };

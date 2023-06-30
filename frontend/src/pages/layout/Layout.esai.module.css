@@ -1,0 +1,27 @@
+
+.headerNavList {
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    align-items: center;
+    margin-left: 100px;
+}
+
+.headerNavPageLink {
+    color: black;
+    text-decoration: none;
+    opacity: 0.75;
+    margin-left: 20px;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-duration: 500ms;
+    transition-property: opacity;
+}
+
+.headerNavPageLink:hover {
+    opacity: 1;
+}
+
+.headerNavPageLinkActive {
+    color: black;
+    text-decoration: none;
+}

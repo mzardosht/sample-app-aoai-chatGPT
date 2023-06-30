@@ -1,0 +1,8 @@
+.commandsContainer {
+    display: flex;
+    align-self: flex-end;
+}
+
+.commandButton {
+    margin: auto 20px auto auto;
+}

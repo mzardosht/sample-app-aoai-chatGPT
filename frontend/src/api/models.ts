@@ -1,3 +1,5 @@
+import { Settings } from "./esai.models";
+
 export type AskResponse = {
     answer: string;
     citations: Citation[];
@@ -45,6 +47,7 @@ export type ChatResponse = {
 
 export type ConversationRequest = {
     messages: ChatMessage[];
+    settings: Settings;
 };
 
 export type UserInfo = {

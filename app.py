@@ -4,6 +4,7 @@ import logging
 import requests
 import openai
 from flask import Flask, Response, request, jsonify
+from esaiapp import esai_blueprint;
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,10 +17,10 @@ def static_file(path):
     return app.send_static_file(path)
 
 # ACS Integration Settings
-AZURE_SEARCH_SERVICE = os.environ.get("AZURE_SEARCH_SERVICE")
-AZURE_SEARCH_INDEX = os.environ.get("AZURE_SEARCH_INDEX")
+AZURE_SEARCH_SERVICE = os.environ.get("AZURE_SEARCH_SERVICE", "exdai-search-service")
+AZURE_SEARCH_INDEX = os.environ.get("AZURE_SEARCH_INDEX", "exdai-index")
 AZURE_SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY")
-AZURE_SEARCH_USE_SEMANTIC_SEARCH = os.environ.get("AZURE_SEARCH_USE_SEMANTIC_SEARCH", "false")
+AZURE_SEARCH_USE_SEMANTIC_SEARCH = os.environ.get("AZURE_SEARCH_USE_SEMANTIC_SEARCH", "False")
 AZURE_SEARCH_SEMANTIC_SEARCH_CONFIG = os.environ.get("AZURE_SEARCH_SEMANTIC_SEARCH_CONFIG", "default")
 AZURE_SEARCH_TOP_K = os.environ.get("AZURE_SEARCH_TOP_K", 5)
 AZURE_SEARCH_ENABLE_IN_DOMAIN = os.environ.get("AZURE_SEARCH_ENABLE_IN_DOMAIN", "true")
@@ -29,17 +30,19 @@ AZURE_SEARCH_TITLE_COLUMN = os.environ.get("AZURE_SEARCH_TITLE_COLUMN")
 AZURE_SEARCH_URL_COLUMN = os.environ.get("AZURE_SEARCH_URL_COLUMN")
 
 # AOAI Integration Settings
-AZURE_OPENAI_RESOURCE = os.environ.get("AZURE_OPENAI_RESOURCE")
-AZURE_OPENAI_MODEL = os.environ.get("AZURE_OPENAI_MODEL")
+AZURE_OPENAI_RESOURCE = os.environ.get("AZURE_OPENAI_RESOURCE", "ES365-AOAI")
+AZURE_OPENAI_MODEL = os.environ.get("AZURE_OPENAI_MODEL", "gpt-4")
 AZURE_OPENAI_KEY = os.environ.get("AZURE_OPENAI_KEY")
-AZURE_OPENAI_TEMPERATURE = os.environ.get("AZURE_OPENAI_TEMPERATURE", 0)
+AZURE_OPENAI_TEMPERATURE = os.environ.get("AZURE_OPENAI_TEMPERATURE", 0.7)
 AZURE_OPENAI_TOP_P = os.environ.get("AZURE_OPENAI_TOP_P", 1.0)
 AZURE_OPENAI_MAX_TOKENS = os.environ.get("AZURE_OPENAI_MAX_TOKENS", 1000)
 AZURE_OPENAI_STOP_SEQUENCE = os.environ.get("AZURE_OPENAI_STOP_SEQUENCE")
-AZURE_OPENAI_SYSTEM_MESSAGE = os.environ.get("AZURE_OPENAI_SYSTEM_MESSAGE", "You are an AI assistant that helps people find information.")
+AZURE_OPENAI_SYSTEM_MESSAGE = os.environ.get("AZURE_OPENAI_SYSTEM_MESSAGE", '''You are an AI assistant that helps people find information. 
+At the end of all of your responses, provide this message 'If you would like to continue learning, try posting your question on the [Viva Engage - E+D Prompt Engineering Community (yammer.com)](https://web.yammer.com/main/groups/eyJfdHlwZSI6Ikdyb3VwIiwiaWQiOiIxMzM5NTIyODI2MjQifQ/all) or [Bing Work](https://www.bing.com/work/search?q=)'. 
+If the answer is not provided in the retrieved documents, answer with 'I don't find any information related to your question from the retrieved documents. As a result, I am unable to provide an answer. If you would like to add content for review, fill out [the following Microsoft Forms](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRxl8XViM761GhvM3jg9uC4NUNUdLQ1YwTUpJWDZHN1RBMUFZWjREODEyQi4u)' ''')
 AZURE_OPENAI_PREVIEW_API_VERSION = os.environ.get("AZURE_OPENAI_PREVIEW_API_VERSION", "2023-06-01-preview")
 AZURE_OPENAI_STREAM = os.environ.get("AZURE_OPENAI_STREAM", "true")
-AZURE_OPENAI_MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "gpt-35-turbo") # Name of the model, e.g. 'gpt-35-turbo' or 'gpt-4'
+AZURE_OPENAI_MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "gpt-4") # Name of the model, e.g. 'gpt-35-turbo' or 'gpt-4'
 
 SHOULD_STREAM = True if AZURE_OPENAI_STREAM.lower() == "true" else False
 
@@ -244,6 +247,8 @@ def conversation():
     except Exception as e:
         logging.exception("Exception in /conversation")
         return jsonify({"error": str(e)}), 500
+
+app.register_blueprint(esai_blueprint)
 
 if __name__ == "__main__":
     app.run()
