@@ -43,6 +43,7 @@ export type ChatResponse = {
     created: number;
     object: ChatCompletionType;
     choices: ChatResponseChoice[];
+    error?: any;
 }
 
 export type ConversationRequest = {
