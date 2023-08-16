@@ -27,6 +27,11 @@
     overflow-x: auto;
 }
 
+.answerText a {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
 .answerFooter {
     display: flex;
     flex-flow: row nowrap;

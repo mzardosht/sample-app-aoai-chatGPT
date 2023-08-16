@@ -17,7 +17,7 @@ if (TABLE_SERVICE_CONNECTION_STRING):
 
 @esai_blueprint.route("/azureindexdate", methods=["GET"])
 def azureindexdate():
-    AZURE_INDEX_DATE = os.environ.get("AZURE_INDEX_DATE","2023/01/01")
+    AZURE_INDEX_DATE = os.environ.get("AZURE_INDEX_DATE","2023-07-24")
     return AZURE_INDEX_DATE
 
 

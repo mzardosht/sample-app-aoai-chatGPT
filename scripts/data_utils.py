@@ -9,6 +9,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from functools import partial
 from typing import List, Dict, Optional, Generator, Tuple
+from get_url import get_file_url
 
 import markdown
 import tiktoken
@@ -391,11 +392,13 @@ def extract_pdf_content(file_path, form_recognizer_client, use_layout=False):
                 position = page_offset + idx
                 if position in roles_start.keys():
                     role = roles_start[position]
-                    page_text += f"<{PDF_HEADERS[role]}>"
+                    if role in PDF_HEADERS:
+                        page_text += f"<{PDF_HEADERS[role]}>"
                 if position in roles_end.keys():
                     role = roles_end[position]
-                    page_text += f"</{PDF_HEADERS[role]}>"
-                
+                    if role in PDF_HEADERS:
+                        page_text += f"</{PDF_HEADERS[role]}>"
+
                 page_text += form_recognizer_results.content[page_offset + idx]
                 
             elif not table_id in added_tables:
@@ -451,6 +454,7 @@ def chunk_content_helper(
             for chunked_content, chunk_size in merge_chunks_serially(chunked_content_list, num_tokens):
                 chunk_doc = parser.parse(chunked_content, file_name=file_name)
                 chunk_doc.title = doc.title
+                chunk_doc.url = doc.url
                 yield chunk_doc.content, chunk_size, chunk_doc
         else:
             if file_format == "python":
@@ -611,9 +615,16 @@ def process_file(
     try:
         url_path = None
         rel_file_path = os.path.relpath(file_path, directory_path)
-        if url_prefix:
-            url_path = url_prefix + rel_file_path
+        # if url_prefix:
+            # url_path = url_prefix + rel_file_path
+            # url_path = convert_escaped_to_posix(url_path)
+
+        # Added as a workaround for getting the url for each citation
+        url_path = get_file_url(os.path.basename(file_path))          
+        if url_path is not None: 
             url_path = convert_escaped_to_posix(url_path)
+        else:            
+            print(f"URL for {file_path} is {url_path}")  
 
         result = chunk_file(
             file_path,
@@ -629,6 +640,7 @@ def process_file(
         for chunk_idx, chunk_doc in enumerate(result.chunks):
             chunk_doc.filepath = rel_file_path
             chunk_doc.metadata = json.dumps({"chunk_id": str(chunk_idx)})
+            chunk_doc.url = url_path
     except Exception as e:
         if not ignore_errors:
             raise

@@ -12,6 +12,7 @@
     display: flex;
     justify-content: left;
     align-items: center;
+    padding-right: 15px;
 }
 
 .headerTitleContainer {
@@ -35,7 +36,7 @@
 .headerIcon {
     height: 32px;
     width: 32px;
-    margin-left: 36px;
+    margin-right: 10px;
 }
 
 .shareButtonContainer {

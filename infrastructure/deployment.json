@@ -67,7 +67,7 @@
         },
         "AzureSearchUseSemanticSearch": {
             "type": "bool",
-            "defaultValue": false,
+            "defaultValue": true,
             "metadata": {
                 "description": "Use semantic search"
             }
@@ -95,7 +95,7 @@
         },
         "AzureSearchEnableInDomain": {
             "type": "bool",
-            "defaultValue": false,
+            "defaultValue": true,
             "metadata": {
                 "description": "Enable in domain"
             }
@@ -142,7 +142,7 @@
         },
         "AzureOpenAIModelName": {
             "type": "string",
-            "defaultValue": "gpt-35-turbo",
+            "defaultValue": "gpt-35-turbo-16k",
             "metadata": {
                 "description": "Azure OpenAI Model Name"
             }
@@ -183,7 +183,7 @@
         },
         "AzureOpenAISystemMessage": {
             "type": "string",
-            "defaultValue": "You are an AI assistant that helps people find information.",
+            "defaultValue": "You are an AI assistant that helps people answer question from the retrieved documents.",
             "metadata": {
                 "description": "Azure OpenAI System Message"
             }

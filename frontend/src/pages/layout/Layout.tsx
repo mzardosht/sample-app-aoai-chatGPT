@@ -1,10 +1,10 @@
-import { Outlet, Link, NavLink } from "react-router-dom";
+import { Outlet, NavLink } from "react-router-dom";
 import styles from "./Layout.module.css";
-import Azure from "../../assets/Azure.svg";
 import { CopyRegular, ShareRegular } from "@fluentui/react-icons";
 import { Dialog, Stack, TextField } from "@fluentui/react";
 import { useEffect, useState } from "react";
 import esaiStyles from "./Layout.esai.module.css";
+import ESAILogo from "../../assets/ESAILogoBeta.png";
 
 const Layout = () => {
     const [isSharePanelOpen, setIsSharePanelOpen] = useState<boolean>(false);
@@ -37,36 +37,52 @@ const Layout = () => {
             <header className={styles.header} role={"banner"}>
                 <div className={styles.headerContainer}>
                     <Stack horizontal verticalAlign="center">
-                        <Link to="/" className={styles.headerTitleContainer}>
-                            <h3 className={styles.headerTitle}>E+D AI Assistant</h3>
-                        </Link>
+                        <a href="/" className={styles.headerTitleContainer}>
+                            <img src={ESAILogo} alt="ESAI Logo" className={styles.headerIcon}/>
+                            <h3 className={styles.headerTitle}>AI Learning Assistant</h3>
+                        </a>
                         <nav>
                             <ul className={esaiStyles.headerNavList}>
-                                {/* <li>
-                                    <NavLink to="/" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
-                                        Chat
-                                    </NavLink>
-                                </li> */}
                                 <li>
-                                    <NavLink to="/" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
-                                        Help
+                                    <NavLink to="/" className={esaiStyles.headerNavPageLink}>
+                                        Getting Started
                                     </NavLink>
                                 </li>
                                 <li>
-                                    <NavLink to="https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRxl8XViM761GhvM3jg9uC4NUNUdLQ1YwTUpJWDZHN1RBMUFZWjREODEyQi4u" 
-                                    target="_blank" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
-                                        Submit content for Review
+                                    <NavLink to="/" className={esaiStyles.headerNavPageLink}>
+                                        FAQs
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="https://microsoft.sharepoint.com/teams/ExDAI"
+                                        target="_blank" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Browse E+D AI
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="https://microsoft.sharepoint.com/teams/EraOfAI"
+                                        target="_blank" className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Browse Era of AI
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="https://privacy.microsoft.com/en-us/privacystatement" target="_blank" 
+                                    className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
+                                        Privacy Statement
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="https://msdpn.azurewebsites.net/" target="_blank" 
                                     className={({ isActive }) => (isActive ? esaiStyles.headerNavPageLinkActive : esaiStyles.headerNavPageLink)}>
-                                        Data Privacy Notice
+                                        Data Protection Notice
                                     </NavLink>
                                 </li>
                             </ul>
                         </nav>
                     </Stack>
+                </div>
+                <div>
+                    <p className={esaiStyles.note}><i>AI Learning Assistant is in beta and can make mistakes, so remember to verify info and share your feedback.</i></p>
                 </div>
             </header>
             <Outlet />

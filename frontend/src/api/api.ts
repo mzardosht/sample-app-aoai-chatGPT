@@ -26,3 +26,19 @@ export async function getUserInfo(): Promise<UserInfo[]> {
     const payload = await response.json();
     return payload;
 }
+
+export async function systemMessageApi() : Promise<string> {
+    const response = await fetch("/getSystemMessage", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        },
+    });
+
+    if (response.status > 299 || !response.ok) {
+        alert("Unknown error");
+        throw Error("Unknown error");
+    }
+
+    return await response.text();
+}

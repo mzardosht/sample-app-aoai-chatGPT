@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import supersub from 'remark-supersub'
 import { Sparkle28Filled, ThumbDislike20Filled, ThumbLike20Filled } from "@fluentui/react-icons";
+import appInsights from "../../appInsights";
 
 interface Props {
     answer: AskResponse;
@@ -66,20 +67,21 @@ export const Answer = ({
                 <Stack.Item style={{ width: "100%" }}>
                     <Stack horizontal horizontalAlign="space-between">
                         <Sparkle28Filled aria-hidden="true" aria-label="Answer logo" />
-                        <Stack horizontal>
+                        {parsedAnswer.markdownFormatText!=="AI Learning Assistant is generating answer..." && (<Stack horizontal>
                             <ThumbLike20Filled
                                 aria-hidden="false"
                                 aria-label="Like this response"
                                 onClick={() => { setFeedback(1); onLikeResponseClicked(); }}
-                                style={feedback > 0 ? { color: "darkgreen" } : { color: "slategray" }}
+                                style={feedback > 0 ? { color: "darkgreen" } : { color: "lightgrey" }}
                             />
                             <ThumbDislike20Filled
                                 aria-hidden="false"
                                 aria-label="Dislike this response"
                                 onClick={() => { setFeedback(-1); onDislikeResponseClicked(); }}
-                                style={feedback < 0 ? { color: "darkred" } : { color: "slategray" }}
+                                style={feedback < 0 ? { color: "darkred" } : { color: "lightgrey" }}
                             />
                         </Stack>
+                        )}
                     </Stack>
                 </Stack.Item>
                 <Stack.Item grow>
@@ -104,14 +106,13 @@ export const Answer = ({
                                 <FontIcon className={styles.accordionIcon}
                                 onClick={handleChevronClick} iconName={chevronIsExpanded ? 'ChevronDown' : 'ChevronRight'}
                                 />
-                                {/* <span className={styles.answerDisclaimer}>AI-generated content may be incorrect!</span> */}
                             </Stack>
                             
                         </Stack>
                     </Stack.Item>
                 )}
                 <Stack.Item className={styles.answerDisclaimerContainer}>
-                    <span className={styles.answerDisclaimer}>AI-generated content may be incorrect</span>
+                    <span className={styles.answerDisclaimer}>AI-generated content by AI Learning Assistant may be incorrect</span>
                 </Stack.Item>
                 </Stack>
                 {chevronIsExpanded && 

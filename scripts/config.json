@@ -1,14 +1,15 @@
 [
     {
-        "data_path": "<path to data>",
-        "location": "<azure region, e.g. 'westus2'>",
-        "subscription_id": "<subscription id>",
-        "resource_group": "<resource group name>",
-        "search_service_name": "<search service name to use or create>",
-        "index_name": "<index name to use or create>",
+        "data_path": "C:\\Users\\mabizardosht\\Work\\ProjectWednesday\\Data\\PDFs",
+        "url_mapping_path": "C:\\Users\\mabizardosht\\Work\\ProjectWednesday\\Data\\file_links.xlsx",
+        "location": "westus2",
+        "subscription_id": "e1c5399f-3084-47cb-890c-bf78ce4bde4e",
+        "resource_group": "OpenAI",
+        "search_service_name": "exdai-search-service",
+        "index_name": "es365ai-index",
         "chunk_size": 1024,
         "token_overlap": 128,
         "semantic_config_name": "default",
-        "language": "<Language to support for example use 'en' for English. Checked supported languages here under lucene - https://learn.microsoft.com/en-us/azure/search/index-add-language-analyzers"
+        "language": "en"
     }
 ]

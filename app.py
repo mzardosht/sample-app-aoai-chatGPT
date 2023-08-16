@@ -3,24 +3,33 @@ import os
 import logging
 import requests
 import openai
-from flask import Flask, Response, request, jsonify
+from flask import Flask, Response, request, jsonify, send_from_directory
 from esaiapp import esai_blueprint;
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 
-@app.route("/", defaults={"path": "index.html"})
-@app.route("/<path:path>")
-def static_file(path):
-    return app.send_static_file(path)
+# Static Files
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
+
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file('favicon.ico')
+
+@app.route("/assets/<path:path>")
+def assets(path):
+    return send_from_directory("static/assets", path)
+
 
 # ACS Integration Settings
-AZURE_SEARCH_SERVICE = os.environ.get("AZURE_SEARCH_SERVICE", "exdai-search-service")
-AZURE_SEARCH_INDEX = os.environ.get("AZURE_SEARCH_INDEX", "exdai-index")
+AZURE_SEARCH_SERVICE = os.environ.get("AZURE_SEARCH_SERVICE", "es365ai-search-service")
+AZURE_SEARCH_INDEX = os.environ.get("AZURE_SEARCH_INDEX", "es365ai-index")
 AZURE_SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY")
-AZURE_SEARCH_USE_SEMANTIC_SEARCH = os.environ.get("AZURE_SEARCH_USE_SEMANTIC_SEARCH", "False")
+AZURE_SEARCH_USE_SEMANTIC_SEARCH = os.environ.get("AZURE_SEARCH_USE_SEMANTIC_SEARCH", "true")
 AZURE_SEARCH_SEMANTIC_SEARCH_CONFIG = os.environ.get("AZURE_SEARCH_SEMANTIC_SEARCH_CONFIG", "default")
 AZURE_SEARCH_TOP_K = os.environ.get("AZURE_SEARCH_TOP_K", 5)
 AZURE_SEARCH_ENABLE_IN_DOMAIN = os.environ.get("AZURE_SEARCH_ENABLE_IN_DOMAIN", "true")
@@ -31,18 +40,16 @@ AZURE_SEARCH_URL_COLUMN = os.environ.get("AZURE_SEARCH_URL_COLUMN")
 
 # AOAI Integration Settings
 AZURE_OPENAI_RESOURCE = os.environ.get("AZURE_OPENAI_RESOURCE", "ES365-AOAI")
-AZURE_OPENAI_MODEL = os.environ.get("AZURE_OPENAI_MODEL", "gpt-4")
+AZURE_OPENAI_MODEL = os.environ.get("AZURE_OPENAI_MODEL", "gpt-35-turbo-16k")
 AZURE_OPENAI_KEY = os.environ.get("AZURE_OPENAI_KEY")
-AZURE_OPENAI_TEMPERATURE = os.environ.get("AZURE_OPENAI_TEMPERATURE", 0.7)
-AZURE_OPENAI_TOP_P = os.environ.get("AZURE_OPENAI_TOP_P", 1.0)
+AZURE_OPENAI_TEMPERATURE = os.environ.get("AZURE_OPENAI_TEMPERATURE", 0)
+AZURE_OPENAI_TOP_P = os.environ.get("AZURE_OPENAI_TOP_P", 1)
 AZURE_OPENAI_MAX_TOKENS = os.environ.get("AZURE_OPENAI_MAX_TOKENS", 1000)
 AZURE_OPENAI_STOP_SEQUENCE = os.environ.get("AZURE_OPENAI_STOP_SEQUENCE")
-AZURE_OPENAI_SYSTEM_MESSAGE = os.environ.get("AZURE_OPENAI_SYSTEM_MESSAGE", '''You are an AI assistant that helps people find information. 
-At the end of all of your responses, provide this message 'If you would like to continue learning, try posting your question on the [Viva Engage - E+D Prompt Engineering Community (yammer.com)](https://web.yammer.com/main/groups/eyJfdHlwZSI6Ikdyb3VwIiwiaWQiOiIxMzM5NTIyODI2MjQifQ/all) or [Bing Work](https://www.bing.com/work/search?q=)'. 
-If the answer is not provided in the retrieved documents, answer with 'I don't find any information related to your question from the retrieved documents. As a result, I am unable to provide an answer. If you would like to add content for review, fill out [the following Microsoft Forms](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRxl8XViM761GhvM3jg9uC4NUNUdLQ1YwTUpJWDZHN1RBMUFZWjREODEyQi4u)' ''')
+AZURE_OPENAI_SYSTEM_MESSAGE = os.environ.get("AZURE_OPENAI_SYSTEM_MESSAGE", '''You are an AI assistant that helps people answer question from the retrieved documents.''')
 AZURE_OPENAI_PREVIEW_API_VERSION = os.environ.get("AZURE_OPENAI_PREVIEW_API_VERSION", "2023-06-01-preview")
 AZURE_OPENAI_STREAM = os.environ.get("AZURE_OPENAI_STREAM", "true")
-AZURE_OPENAI_MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "gpt-4") # Name of the model, e.g. 'gpt-35-turbo' or 'gpt-4'
+AZURE_OPENAI_MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "gpt-35-turbo-16k") # Name of the model, e.g. 'gpt-35-turbo' or 'gpt-4'
 
 SHOULD_STREAM = True if AZURE_OPENAI_STREAM.lower() == "true" else False
 
@@ -55,6 +62,11 @@ def should_use_data():
     if AZURE_SEARCH_SERVICE and AZURE_SEARCH_INDEX and AZURE_SEARCH_KEY:
         return True
     return False
+
+
+def format_as_ndjson(obj: dict) -> str:
+    return json.dumps(obj, ensure_ascii=False) + "\n"
+
 
 def prepare_body_headers_with_data(request):
     request_messages = request.json["messages"]
@@ -74,7 +86,7 @@ def prepare_body_headers_with_data(request):
                     "key": AZURE_SEARCH_KEY,
                     "indexName": AZURE_SEARCH_INDEX,
                     "fieldsMapping": {
-                        "contentField": AZURE_SEARCH_CONTENT_COLUMNS.split("|") if AZURE_SEARCH_CONTENT_COLUMNS else [],
+                        "contentFields": AZURE_SEARCH_CONTENT_COLUMNS.split("|") if AZURE_SEARCH_CONTENT_COLUMNS else [],
                         "titleField": AZURE_SEARCH_TITLE_COLUMN if AZURE_SEARCH_TITLE_COLUMN else None,
                         "urlField": AZURE_SEARCH_URL_COLUMN if AZURE_SEARCH_URL_COLUMN else None,
                         "filepathField": AZURE_SEARCH_FILENAME_COLUMN if AZURE_SEARCH_FILENAME_COLUMN else None
@@ -123,7 +135,7 @@ def stream_with_data(body, headers, endpoint):
                 if line:
                     lineJson = json.loads(line.lstrip(b'data:').decode('utf-8'))
                     if 'error' in lineJson:
-                        yield json.dumps(lineJson).replace("\n", "\\n") + "\n"
+                        yield format_as_ndjson(lineJson)
                     response["id"] = lineJson["id"]
                     response["model"] = lineJson["model"]
                     response["created"] = lineJson["created"]
@@ -142,9 +154,9 @@ def stream_with_data(body, headers, endpoint):
                         if deltaText != "[DONE]":
                             response["choices"][0]["messages"][1]["content"] += deltaText
 
-                    yield json.dumps(response).replace("\n", "\\n") + "\n"
+                    yield format_as_ndjson(response)
     except Exception as e:
-        yield json.dumps({"error": str(e)}).replace("\n", "\\n") + "\n"
+        yield format_as_ndjson({"error": str(e)})
 
 
 def conversation_with_data(request):
@@ -156,12 +168,12 @@ def conversation_with_data(request):
         status_code = r.status_code
         r = r.json()
 
-        return Response(json.dumps(r).replace("\n", "\\n"), status=status_code)
+        return Response(format_as_ndjson(r), status=status_code)
     else:
         if request.method == "POST":
-            return Response(stream_with_data(body, headers, endpoint), mimetype='text/event-stream')
+            return Response(stream_with_data(body, headers, endpoint))
         else:
-            return Response(None, mimetype='text/event-stream')
+            return Response(None)
 
 def stream_without_data(response):
     responseText = ""
@@ -182,7 +194,7 @@ def stream_without_data(response):
                 }]
             }]
         }
-        yield json.dumps(response_obj).replace("\n", "\\n") + "\n"
+        yield format_as_ndjson(response_obj)
 
 
 def conversation_without_data(request):
@@ -232,9 +244,9 @@ def conversation_without_data(request):
         return jsonify(response_obj), 200
     else:
         if request.method == "POST":
-            return Response(stream_without_data(response), mimetype='text/event-stream')
+            return Response(stream_without_data(response))
         else:
-            return Response(None, mimetype='text/event-stream')
+            return Response(None)
 
 @app.route("/conversation", methods=["GET", "POST"])
 def conversation():
@@ -247,6 +259,10 @@ def conversation():
     except Exception as e:
         logging.exception("Exception in /conversation")
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/getSystemMessage", methods=["GET"])  
+def getSystemMessage():
+    return AZURE_OPENAI_SYSTEM_MESSAGE 
 
 app.register_blueprint(esai_blueprint)
 

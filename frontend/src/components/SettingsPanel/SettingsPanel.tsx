@@ -10,23 +10,8 @@ export interface ISettingsPanelProps {
   onDismiss: () => void;
 }
 
-/* const acsIndexOptions: IDropdownOption[] = [
-  { key: "m365index", text: "M365 Combined Index" },
-]; */
-
 export const SettingsPanel : React.FC<ISettingsPanelProps> = ({ isOpen, onSettingsChanged, onDismiss }) => {
   const [enableInDomainOnly, setEnableInDomainOnly] = useState<boolean>(true);
-  const [acsIndex, setacsIndex] = useState<string>("m365index");
-
-  const onACSIndexDropDownChanged = (
-    _event: React.FormEvent<HTMLDivElement>,
-    option?: IDropdownOption | undefined,
-    _index?: number | undefined
-  ): void => {
-    if (option) {
-      setacsIndex(option.key.toString());
-    }
-  };
 
   const onInDomainOnlyChanged = (
     _ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
@@ -36,7 +21,7 @@ export const SettingsPanel : React.FC<ISettingsPanelProps> = ({ isOpen, onSettin
   };
 
   const handleDismiss = () => {
-    onSettingsChanged({ acs_index: acsIndex, in_domain_only: enableInDomainOnly});
+    onSettingsChanged({in_domain_only: enableInDomainOnly});
     onDismiss();
   }
 
@@ -53,14 +38,8 @@ export const SettingsPanel : React.FC<ISettingsPanelProps> = ({ isOpen, onSettin
         </DefaultButton>
       )}
       isFooterAtBottom={true}
+      isLightDismiss={true}
     >
-{/*       <Dropdown
-        className={styles.chatSettingsSeparator}
-        selectedKey={acsIndex}
-        options={acsIndexOptions}
-        label="Product"
-        onChange={onACSIndexDropDownChanged}
-      /> */}
       <Checkbox
         className={styles.chatSettingsSeparator}
         checked={enableInDomainOnly}

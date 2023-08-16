@@ -1,6 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { useEffect, useState } from "react";
 import { azureIndexDateApi } from "../../api/esai.api";
+import MicrosoftLogo from "../../assets/MicrosoftLogo.png";
 
 const styles = mergeStyleSets({
     container: {
@@ -16,8 +17,11 @@ const styles = mergeStyleSets({
         alignItems: "center",
         textAlign: "center",
     },
-    placeholder: {
+    logoPlaceHolder: {
         width: "33%",
+    },
+    logo: {
+        width: "150px",
     },
     confidential: {
         fontWeight: 400,
@@ -30,18 +34,20 @@ const styles = mergeStyleSets({
 });
 
 export const Footer: React.FC = () => {
-    // const [lastUpdated, setLastUpdated] = useState<string>();
-    // useEffect(() => {
-    //     azureIndexDateApi().then((value) => setLastUpdated(value));
-    // }, []);
+    const [lastUpdated, setLastUpdated] = useState<string>();
+    useEffect(() => {
+        azureIndexDateApi().then((value) => setLastUpdated(value));
+    }, []);
 
     return (
         <div className={styles.container}>
-            <div className={styles.placeholder}></div>
+            <div className={styles.logoPlaceHolder}><img className={styles.logo} src={MicrosoftLogo} alt="ESAI Logo"/></div>            
             <h6 className={styles.confidential}>
                 <i>Microsoft Confidential</i>
             </h6>
-            {/* <div className={styles.updateTime}>Data Refreshed On: {lastUpdated}</div> */}
+            <div className={styles.updateTime}>
+                <i>Data Refreshed On: {lastUpdated}</i>
+            </div>
         </div>
     );
 };
