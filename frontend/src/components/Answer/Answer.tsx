@@ -94,7 +94,9 @@ export const Answer = ({
                 </Stack.Item>
                 <Stack horizontal className={styles.answerFooter}>
                 {!!parsedAnswer.citations.length && (
-                    <Stack.Item aria-label="References">
+                    <Stack.Item aria-label="References"
+                        onKeyDown={e => e.key === "Enter" || e.key === " " ? toggleIsRefAccordionOpen() : null}
+                    >
                         <Stack style={{width: "100%"}} >
                             <Stack horizontal horizontalAlign='start' verticalAlign='center'>
                                 <Text
@@ -119,7 +121,16 @@ export const Answer = ({
                     <div style={{ marginTop: 8, display: "flex", flexFlow: "wrap column", maxHeight: "150px", gap: "4px" }}>
                         {parsedAnswer.citations.map((citation, idx) => {
                             return (
-                                <span title={createCitationFilepath(citation, ++idx)} key={idx} onClick={() => onCitationClicked(citation)} className={styles.citationContainer}>
+                                <span 
+                                    title={createCitationFilepath(citation, ++idx)} 
+                                    tabIndex={0} 
+                                    role="link" 
+                                    key={idx} 
+                                    onClick={() => onCitationClicked(citation)} 
+                                    onKeyDown={e => e.key === "Enter" || e.key === " " ? onCitationClicked(citation) : null}
+                                    className={styles.citationContainer}
+                                    aria-label={createCitationFilepath(citation, idx)}
+                                >
                                     <div className={styles.citation}>{idx}</div>
                                     {createCitationFilepath(citation, idx, true)}
                                 </span>);
